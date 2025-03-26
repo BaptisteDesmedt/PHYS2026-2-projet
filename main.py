@@ -13,14 +13,15 @@ def main():
     L = 0.05e-9
     x_min = -L
     x_max = L
-    num_intervalles = 100
+    num_intervalles = 3
     x_steps, V_steps = discret.discretiser(x_min, x_max, num_intervalles, pot.pot, params)
     x = np.linspace(x_min, x_max, 1000)
     plt.plot(x_steps, V_steps, label="Discrete Steps")
     plt.plot(x, pot.pot(x, params), label="Continuous Function", linestyle='-')
     plt.legend()
     plt.show()  
+    return x_steps, V_steps
 
-if __name__ == "__main__":
-    main()
+global x_steps, V_steps
+x_steps, V_steps = main()
 
