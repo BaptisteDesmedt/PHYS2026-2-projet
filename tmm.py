@@ -60,12 +60,41 @@ def find_eigenvalues(V, dx, E_min, E_max, num_points=1000, tol=1e-3, plot=False)
     E_values = np.linspace(E_min, E_max, num_points)
     transmission = np.zeros_like(E_values, dtype=complex)
     
+    # Store potential eigenvalues
+    potential_eigenvalues = []
+    
     for i, E in enumerate(E_values):
         transmission[i] = boudary_cond(V, E, dx)
         if np.abs(transmission[i]) < tol:
-            return E
-        print("pas de E trouvé")
-        return transmission
+            potential_eigenvalues.append(E)
+    
+    # If we found eigenvalues, return them
+    if potential_eigenvalues:
+        return potential_eigenvalues
+    
+    # If no eigenvalues found with the tolerance, find the closest ones
+    abs_transmission = np.abs(transmission)
+    min_indices = np.argsort(abs_transmission)[:5]  # Get indices of 5 smallest values
+    
+    refined_eigenvalues = []
+    for idx in min_indices:
+        E_guess = E_values[idx]
+        try:
+            result = root_scalar(
+                lambda E: np.abs(boudary_cond(V, E, dx)),
+                bracket=[max(E_min, E_guess-0.1*(E_max-E_min)), min(E_max, E_guess+0.1*(E_max-E_min))],
+                method='brentq'
+            )
+            if result.converged and np.abs(result.root) < 1e-2:
+                refined_eigenvalues.append(result.root)
+        except ValueError:
+            continue
+    
+    if refined_eigenvalues:
+        return refined_eigenvalues
+    
+    # If still no eigenvalues found, return the energies with minimum transmission
+    return E_values[min_indices]
         
     
 
