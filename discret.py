@@ -9,4 +9,4 @@ def discretiser(x_min, x_max, num_intervalles, pot, params):
     V_steps = np.repeat(V_bins, 2)
     x_steps = np.repeat(x_bins, 2)[1:-1]
     
-    return x_steps, V_steps
+    return x_steps, V_steps, x_bins, V_bins
