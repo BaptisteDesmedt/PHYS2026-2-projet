@@ -3,6 +3,7 @@ import discret
 import tmm
 import numpy as np
 import matplotlib.pyplot as plt
+import solve
 
 def main(): 
     #constante :
@@ -16,30 +17,35 @@ def main():
     x_min = -L
     x_max = L
     num_intervalles = 10
+    N = 10
     x = np.linspace(x_min, x_max, 1000)
     E = 0.0
-    E_min = -2e18     # -10 eV
-    E_max = -1e-16
+    E_min = -10 * 1.6e-19     # -10 eV
+    E_max = -1e-20
     
     
     #discretisation du potentielle 
     x_steps, V_steps, x_bins, V_bins = discret.discretiser(x_min, x_max, num_intervalles, pot.pot, params)
-    L = abs(x_bins[1] - x_bins[0])
+    dx = abs(x_bins[1] - x_bins[0])
     #Construction de la matrice de transfer
-    T = tmm.build_transfer_matrix(V_bins, E, L)
+    T = tmm.build_transfer_matrix(V_bins, E, dx)
     
     #Trouver la valeur de l'energie admise
-    E_admitted = tmm.find_eigenvalues(V_bins, L, E_min, E_max)
+    E_admitted = tmm.find_eigenvalues(V_bins, dx, E_min, E_max)
+    
+    #Résoudre l'eq
+    x_mesh = np.linspace(-L, L, 1000)  # Maillage spatial
+    S0 = np.array([0,0])
+    psi = solve.solve(pot.pot,E_admitted[0],S0,x_mesh, params)
 
 
     #Traçage des graph
-    plt.plot(x_steps, V_steps, label="Discrete Steps")
-    plt.plot(x, pot.pot(x, params), label="Continuous Function", linestyle='-')
+    
+    plt.plot(psi.x, psi.y[0], label="psi")
     plt.legend()
     plt.show()  
     print(T)
-    return x_steps, V_steps, E_admitted
-
+    return psi.x, psi.y ,E_admitted
 global x_steps, V_steps,E_admitted
 x_steps, V_steps, E_admitted = main()
 
