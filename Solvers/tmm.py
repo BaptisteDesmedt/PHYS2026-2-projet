@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 from scipy.optimize import root_scalar
 from scipy.signal import find_peaks
 from scipy.optimize import minimize_scalar
-import pot
-import discret
+from Potentials.pot import pot
+from Potentials.discret import discretiser
 
 #CONSTANTS DEFINITION
 
