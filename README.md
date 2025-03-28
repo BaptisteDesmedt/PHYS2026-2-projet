@@ -1,143 +1,170 @@
-# 🖥️ Guide Git/GitHub pour Windows
+#PHYS2026-2-Project 🚀
+Projet de groupe en langage Python effectué dans le cadre du cours de physique Iv
+```text
+MECA0011-2-Project/
+├── CL/
+│   ├── 000-README.txt
+│   ├── 1-cl.txt
+│   ├── 1-dom.txt
+│   ├── 1-num.txt
+│   ├── 2-contourObj.txt
+│   ├── 2-dom.txt
+│   └── 2-num.txt
+├── fluid_dynamics/
+│   ├── getCoeff.py
+│   ├── __init__.py
+│   ├── laplacian.py
+│   ├── pressure.py
+│   ├── __pycache__/
+│   │   ├── getCoeff.cpython-312.pyc
+│   │   ├── __init__.cpython-312.pyc
+│   │   ├── laplacian.cpython-312.pyc
+│   │   ├── pressure.cpython-312.pyc
+│   │   └── velocity.cpython-312.pyc
+│   └── velocity.py
+├── main.py
+├── __pycache__/
+│   ├── getCoeff.cpython-311.pyc
+│   ├── getCoeff.cpython-312.pyc
+│   ├── laplacian.cpython-311.pyc
+│   └── laplacian.cpython-312.pyc
+├── README.md
+├── requirements.txt
+└── tools/
+    ├── circu.py
+    ├── deriv.py
+    ├── force.py
+    ├── __init__.py
+    └── __pycache__/
+        ├── circu.cpython-312.pyc
+        ├── deriv.cpython-312.pyc
+        ├── force.cpython-312.pyc
+        └── __init__.cpython-312.pyc
+```
 
-## 📥 Installation de Git sur Windows
+## Guide d'utilisation de Git: Pull, Commit et Push 🔄
 
-1. **Télécharger Git** :  
-   [https://git-scm.com/download/win](https://git-scm.com/download/win)
+Ce guide est conçu pour vous aider à comprendre les bases de Git et comment effectuer les opérations courantes comme `pull`, `commit` et `push`, à la fois via le terminal et GitHub Desktop. Parfait pour les débutants!
 
-2. **Exécuter l'installateur** :  
-   - Cochez toutes les options par défaut  
-   - Choisissez **Git Bash** comme terminal principal  
+### 📋 Table des matières
+1. [Qu'est-ce que Git?](#quest-ce-que-git)
+2. [Installation de Git](#installation-de-git)
+3. [Utilisation de Git via le Terminal](#utilisation-de-git-via-le-terminal)
+   - [Cloner un dépôt](#cloner-un-dépôt)
+   - [Pull (Mettre à jour votre dépôt local)](#pull-mettre-à-jour-votre-dépôt-local)
+   - [Commit (Enregistrer vos modifications)](#commit-enregistrer-vos-modifications)
+   - [Push (Envoyer vos modifications sur GitHub)](#push-envoyer-vos-modifications-sur-github)
+4. [Utilisation de GitHub Desktop](#utilisation-de-github-desktop)
+   - [Cloner un dépôt](#cloner-un-dépôt-1)
+   - [Pull (Mettre à jour votre dépôt local)](#pull-mettre-à-jour-votre-dépôt-local-1)
+   - [Commit (Enregistrer vos modifications)](#commit-enregistrer-vos-modifications-1)
+   - [Push (Envoyer vos modifications sur GitHub)](#push-envoyer-vos-modifications-sur-github-1)
+5. [Conclusion](#conclusion)
 
-3. **Vérifier l'installation** :  
-   Ouvrez `Git Bash` et tapez :  
+---
+
+## Qu'est-ce que Git? 🤔
+
+Git est un système de contrôle de version qui permet de suivre les modifications apportées à des fichiers au fil du temps. Il est particulièrement utile pour les projets de développement logiciel, car il permet à plusieurs personnes de collaborer sur le même projet sans conflit.
+
+## Installation de Git 💻
+
+### Sur Windows
+1. Téléchargez Git depuis [git-scm.com](https://git-scm.com/)
+2. Suivez les instructions d'installation
+
+### Sur macOS
+1. Ouvrez le Terminal
+2. Installez Git avec Homebrew:
    ```bash
-   git --version
-   # Doit afficher : git version 2.x.x.windows.1
+   brew install git
+   ```
 
-🔧 Configuration Initiale
-bash
-Copy
+### Sur Linux
+1. Ouvrez le Terminal
+2. Installez Git avec la commande suivante:
+   ```bash
+   sudo apt-get install git
+   ```
 
-# Définir votre identité
-git config --global user.name "Votre Nom"
-git config --global user.email "votre.email@domaine.com"
+## Utilisation de Git via le Terminal ⌨️
 
-# Générer une clé SSH (facultatif mais recommandé)
-ssh-keygen -t ed25519 -C "votre.email@domaine.com"
-# Copiez le contenu de ~/.ssh/id_ed25519.pub et ajoutez-le à :
-# GitHub > Settings > SSH and GPG keys
+### Cloner un dépôt
 
-🚀 Commandes de Base pour Windows
-Initialiser un projet
-bash
-Copy
+Pour commencer à travailler sur un projet, vous devez d'abord cloner le dépôt (repository) sur votre machine locale.
 
-# Créer un dossier et l'initialiser
-mkdir mon-projet
-cd mon-projet
-git init
+```bash
+git clone https://github.com/username/repository.git
+```
 
-Cloner un dépôt existant
-bash
-Copy
+Remplacez `username` par le nom d'utilisateur GitHub et `repository` par le nom du dépôt.
 
-git clone https://github.com/utilisateur/depot.git
+### Pull (Mettre à jour votre dépôt local)
 
-Gérer les modifications
-bash
-Copy
+Avant de commencer à travailler, il est important de s'assurer que votre dépôt local est à jour avec le dépôt distant.
 
-# Ajouter tous les fichiers modifiés
-git add .
+```bash
+git pull origin main
+```
 
-# Faire un commit
-git commit -m "Ajout fonctionnalité X"
+Cela mettra à jour votre branche locale avec les dernières modifications de la branche `main` (ou `master` selon le dépôt).
 
-# Envoyer vers GitHub
+### Commit (Enregistrer vos modifications)
+
+Après avoir apporté des modifications à vos fichiers, vous devez les enregistrer (commit) dans l'historique de Git.
+
+1. Ajoutez les fichiers modifiés à l'index:
+   ```bash
+   git add .
+   ```
+   Cela ajoute tous les fichiers modifiés. Vous pouvez aussi ajouter des fichiers spécifiques en remplaçant `.` par le nom du fichier.
+
+2. Enregistrez les modifications avec un message descriptif:
+   ```bash
+   git commit -m "Votre message de commit ici"
+   ```
+
+### Push (Envoyer vos modifications sur GitHub)
+
+Une fois que vous avez commité vos modifications, vous pouvez les envoyer (push) sur le dépôt distant.
+
+```bash
 git push origin main
+```
 
-🛠 Workflow Typique (Git Bash)
+Cela enverra vos modifications sur la branche `main` du dépôt distant.
 
-    Créer une branche :
-    bash
-    Copy
+## Utilisation de GitHub Desktop 🖥️
 
-    git checkout -b ma-nouvelle-branche
+GitHub Desktop est une application graphique qui simplifie l'utilisation de Git. Voici comment effectuer les mêmes opérations avec GitHub Desktop.
 
-    Travailler et valider :
-    bash
-    Copy
+### Cloner un dépôt
 
-    # Après modifications...
-    git add fichier.py
-    git commit -m "Correction bug login"
+1. Ouvrez GitHub Desktop
+2. Cliquez sur `File > Clone Repository`
+3. Sélectionnez le dépôt que vous souhaitez cloner et choisissez l'emplacement sur votre machine
 
-    Pousser vers GitHub :
-    bash
-    Copy
+### Pull (Mettre à jour votre dépôt local)
 
-    git push origin ma-nouvelle-branche
+1. Ouvrez GitHub Desktop
+2. Sélectionnez le dépôt que vous souhaitez mettre à jour
+3. Cliquez sur `Fetch origin` pour vérifier les mises à jour
+4. Si des mises à jour sont disponibles, cliquez sur `Pull origin` pour les appliquer
 
-    Ouvrir une Pull Request sur GitHub via l'interface web.
+### Commit (Enregistrer vos modifications)
 
-🔄 Synchroniser avec un dépôt existant
-bash
-Copy
+1. Après avoir modifié des fichiers, ouvrez GitHub Desktop
+2. Les fichiers modifiés apparaîtront dans la section `Changes`
+3. Ajoutez un message de commit dans la zone de texte en bas à gauche
+4. Cliquez sur `Commit to main` (ou la branche sur laquelle vous travaillez)
 
-# Ajouter le dépôt "officiel" comme upstream
-git remote add upstream https://github.com/projet-officiel/depot.git
+### Push (Envoyer vos modifications sur GitHub)
 
-# Récupérer les modifications
-git fetch upstream
+1. Après avoir commité vos modifications, cliquez sur `Push origin` en haut à droite
+2. Vos modifications seront envoyées sur le dépôt distant
 
-# Fusionner avec votre branche
-git merge upstream/main
+## Conclusion 🎉
 
-⚠️ Dépannage Courant
-Erreur d'authentification
-bash
-Copy
+Que vous utilisiez le terminal ou GitHub Desktop, Git est un outil puissant pour gérer vos projets de développement. Avec ce guide, vous devriez être en mesure de cloner, mettre à jour, enregistrer et envoyer vos modifications sur GitHub. Bon codage!
 
-# Générer un token GitHub : Settings > Developer settings > Personal access tokens
-git remote set-url origin https://<VOTRE_TOKEN>@github.com/utilisateur/depot.git
-
-Annuler un fichier modifié
-bash
-Copy
-
-git restore fichier.txt
-
-Réinitialiser un dépôt
-bash
-Copy
-
-git reset --hard HEAD
-
-💡 Bonnes Pratiques Windows
-
-    Éviter les problèmes de chemins :
-    Utilisez des chemins courts sans espaces (C:/dev/mon-projet)
-
-    Gestion des fins de ligne :
-    bash
-    Copy
-
-    git config --global core.autocrlf true
-
-    Utiliser .gitignore :
-    Créez un fichier .gitignore pour exclure :
-    Copy
-
-    # Exemple pour Python
-    __pycache__/
-    *.pyc
-    .env
-
-📚 Ressources Utiles
-
-    Git pour Windows Documentation
-
-    GitHub Desktop (alternative graphique)
-
-    Formation Git Microsoft
+Si vous avez des questions ou des problèmes, n'hésitez pas à consulter la [documentation officielle de Git](https://git-scm.com/doc) ou à poser des questions sur les forums de la communauté GitHub.
