@@ -1,45 +1,18 @@
 #PHYS2026-2-Project 🚀
 Projet de groupe en langage Python effectué dans le cadre du cours de physique Iv
 ```text
-MECA0011-2-Project/
-├── CL/
-│   ├── 000-README.txt
-│   ├── 1-cl.txt
-│   ├── 1-dom.txt
-│   ├── 1-num.txt
-│   ├── 2-contourObj.txt
-│   ├── 2-dom.txt
-│   └── 2-num.txt
-├── fluid_dynamics/
-│   ├── getCoeff.py
-│   ├── __init__.py
-│   ├── laplacian.py
-│   ├── pressure.py
-│   ├── __pycache__/
-│   │   ├── getCoeff.cpython-312.pyc
-│   │   ├── __init__.cpython-312.pyc
-│   │   ├── laplacian.cpython-312.pyc
-│   │   ├── pressure.cpython-312.pyc
-│   │   └── velocity.cpython-312.pyc
-│   └── velocity.py
-├── main.py
-├── __pycache__/
-│   ├── getCoeff.cpython-311.pyc
-│   ├── getCoeff.cpython-312.pyc
-│   ├── laplacian.cpython-311.pyc
-│   └── laplacian.cpython-312.pyc
-├── README.md
-├── requirements.txt
-└── tools/
-    ├── circu.py
-    ├── deriv.py
-    ├── force.py
-    ├── __init__.py
-    └── __pycache__/
-        ├── circu.cpython-312.pyc
-        ├── deriv.cpython-312.pyc
-        ├── force.cpython-312.pyc
-        └── __init__.cpython-312.pyc
+Projet/
+├── main.py # Point d'entrée principal
+├── Potentials/ # Module pour les calculs de potentiels
+│ ├── discret.py # Discrétisation des potentiels
+│ ├── init.py # Fichier d'initialisation du module
+│ └── pot.py # Calculs des potentiels
+├── README.md # Documentation du projet
+├── requirements.txt # Dépendances Python
+└── Solvers/ # Module pour les solveurs
+├── init.py # Fichier d'initialisation du module
+├── solve.py # Solveur principal
+└── tmm.py # Solveur TMM (Transfer Matrix Method)
 ```
 
 ## Guide d'utilisation de Git: Pull, Commit et Push 🔄
