@@ -29,19 +29,33 @@ def pot(x, params):
     # Calculate the potential using the given formula
     return -((Q * e) / (4 * np.pi * eps0)) / np.sqrt((x - x0) ** 2 + a ** 2)
 
-def pot_period(x,N,L,params):
+
+def pot_period(x, params, N, L):
+    """
+    Potentiel périodique de N puits Coulombiens équidistants.
+    
+    Paramètres:
+    x : array
+        Positions où calculer le potentiel
+    params : tuple
+        (Q, e, a, x0, eps0)
+    N : int
+        Nombre de puits
+    L : float
+        Distance entre les puits (en mètres)
+    
+    Retourne:
+    V : array
+        Potentiel total
+    """
     Q, e, a, x0, eps0 = params
-    x_wells = np.array([n * L for n in range(N)])
-    V_wells = np.zeros_like(x)
-    for x_i in x_wells:
-        V_wells += -((Q * e) / (4 * np.pi * eps0)) / np.sqrt((x - x0) ** 2 + a ** 2)
-
-    V_interaction = np.zeros_like(x)
-
-    for i in range(len(x_wells) - 1):
-        x_i, x_j = x_wells[i], x_wells[i+1]
-        r_ij = np.abs(x_i - x_j)
-        V_interaction += -((Q * e) / (4 * np.pi * eps0)) / np.sqrt((x - x0) ** 2 + a ** 2)
-    return V_interaction + V_wells
-
-
+    
+    # Positions des puits [x0, x0+L, x0+2L, ..., x0+(N-1)L]
+    x_wells = x0 + np.arange(N) * L
+    
+    # Calcul du potentiel total
+    V = np.zeros_like(x)
+    for xi in x_wells:
+        V += - (Q * e) / (4 * np.pi * eps0) / np.sqrt((x - xi)**2 + a**2)
+    
+    return V
