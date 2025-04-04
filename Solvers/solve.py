@@ -26,11 +26,19 @@ def bc(ya, yb):
 
 def solve(V,E,S0,x_mesh,params,N,L,k):
     y_guess = np.zeros((2,len(x_mesh)))
+    x0 = L
+    sigma = L/2
+    psi_guess = S0 * np.exp(-((x_mesh - x0)**2) / (2 * sigma**2)) * np.cos(k * x_mesh)
+    dpsi_guess = (-(x_mesh - x0)/sigma**2 * psi_guess 
+                  - k * S0 * np.exp(-((x_mesh - x0)**2)/(2 * sigma**2)) * np.sin(k * x_mesh))
+    y_guess[0, :] = psi_guess  # ψ(x)
+    y_guess[1, :] = dpsi_guess  # ψ'(x)
     sol =solve_bvp(
     fun=lambda x, y: OdSchrodinger(x, y, E, V,params,N,L),
     bc=lambda ya, yb: bc(ya, yb),
     x=x_mesh,
     y=y_guess,
+    max_nodes=10000 
 )
     return sol
 
