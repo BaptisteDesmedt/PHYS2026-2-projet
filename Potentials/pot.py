@@ -1,5 +1,4 @@
-import numpy as np  # Importing the numpy library for numerical operations
-import matplotlib.pyplot as plt  # Importing matplotlib for plotting (not used in this code)
+import numpy as np 
 
 def pot(x, params):
     """
@@ -25,8 +24,8 @@ def pot(x, params):
     float
         The potential at position x.
     """
-    Q, e, a, x0, eps0 = params  # Unpacking the parameters
-    # Calculate the potential using the given formula
+    Q, e, a, x0, eps0 = params  
+   
     return -((Q * e) / (4 * np.pi * eps0)) / np.sqrt((x - x0) ** 2 + a ** 2)
 
 
@@ -50,13 +49,13 @@ def pot_period(x, params, N, L):
     """
     Q, e, a, x0, eps0 = params
     
-    # Positions des puits [x0, x0+L, x0+2L, ..., x0+(N-1)L]
+    
     x_wells = x0 + np.arange(N) * L
     
-    # Calcul du potentiel total
+    
     V = np.zeros_like(x)
     for xi in x_wells:
-        V += - (Q * e) / (4 * np.pi * eps0) *np.sqrt((x - xi)**2 + a**2)
+        V += - (Q * e) / (4 * np.pi * eps0)/np.sqrt((x - xi)**2 + a**2)
     return V
 
 def potential_voisin(x, params, N, L):
@@ -80,28 +79,22 @@ def potential_voisin(x, params, N, L):
     Q, e, a, x0, eps0 = params
     x = np.asarray(x)
     V = np.zeros_like(x)
-    x_wells = x0 + np.arange(N) * L  # Positions des N puits
+    x_wells = x0 + np.arange(N)* L  
     
 
-    if x <= x0 : 
-        d = np.sqrt((x-x0)**2 + a**2)
-        V = - (Q * e)/ (4 * np.pi * eps0 * d)
+    k_floor = np.floor((x - x0) / L).astype(int)
+    left_well = np.clip(k_floor, 0, N-1)
 
-    elif x >=  N*L :
-        d = np.sqrt((x - N*L)**2 + a**2)
-        V = - (Q * e)/ (4 * np.pi * eps0 * d)
-
-    else : 
-        k_floor = np.floor((x - x0) / L).astype(int)
-        left_well = np.clip(k_floor, 0, N-1)
-
-        right_well = np.clip(k_floor + 1, 0, N-1)
-        x_left = x_wells[left_well]
-        dl = np.sqrt((x-x_left)**2 + a**2)
-        x_right = x_wells[right_well]
-        dr = np.sqrt((x-x_right)**2 + a**2)
-        if dr < dl : 
-            V -=   (Q * e) / (4 * np.pi * eps0 * dr)
-        else :
-            V -=  (Q * e) / (4 * np.pi * eps0 * dl)
+    right_well = np.clip(k_floor + 1, 0, N-1)
+    x_left = x_wells[left_well]
+    dl = np.sqrt((x-x_left)**2 + a**2)
+    x_right = x_wells[right_well]
+    dr = np.sqrt((x-x_right)**2 + a**2)
+    dist_l = np.sqrt(x**2 +x_left**2)
+    dist_r = np.sqrt(x**2 + x_right**2)
+    if dr < dl : 
+        V +=  - (Q * e) / (4 * np.pi * eps0 )/dr
+    else:
+        V += - (Q * e) / (4 * np.pi * eps0 )/dl
     return V
+

@@ -5,10 +5,12 @@ from .solve import (
 from .tmm import (
     build_transfer_matrix,
     find_eigenvalues,
+    k_from_energy,
 )
 
 __all__ = [
     "find_eigenvalues",
     "solve",
-    "build_transfer_matrix"
+    "build_transfer_matrix",
+    "k_from_energy",
 ]

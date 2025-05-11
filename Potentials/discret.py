@@ -1,8 +1,32 @@
 import numpy as np
-import matplotlib.pyplot as plt
-
 
 def discretiser(x_min, x_max, num_intervalles, pot, params):
+    """
+    Discretize a potential function over a given interval.
+
+    Parameters:
+    -----------
+    x_min : float
+        Minimum x value of the interval
+    x_max : float
+        Maximum x value of the interval
+    num_intervalles : int
+        Number of intervals for discretization
+    pot : callable
+        Potential function to discretize
+    params : tuple
+        Parameters for the potential function
+
+    Returns:
+    --------
+    tuple
+        x_bins : ndarray
+            Boundaries of the intervals
+        V_bins : ndarray
+            Potential values at the center of each interval
+        x_centers : ndarray
+            Centers of the intervals
+    """
     x_bins = np.linspace(x_min, x_max, num_intervalles + 1)
     x_centers = (x_bins[:-1] + x_bins[1:]) / 2
 
@@ -13,7 +37,37 @@ def discretiser(x_min, x_max, num_intervalles, pot, params):
     x_centers[-1] = x_max
     return x_bins, V_bins, x_centers
 
-def discretiser_period(x_min, x_max, num_intervalles, pot,L,N, params):
+def discretiser_period(x_min, x_max, num_intervalles, pot, L, N, params):
+    """
+    Discretize a periodic potential function over a given interval.
+
+    Parameters:
+    -----------
+    x_min : float
+        Minimum x value of the interval
+    x_max : float
+        Maximum x value of the interval
+    num_intervalles : int
+        Number of intervals for discretization
+    pot : callable
+        Potential function to discretize
+    L : float
+        Period length of the potential
+    N : int
+        Number of periods
+    params : tuple
+        Parameters for the potential function
+
+    Returns:
+    --------
+    tuple
+        x_bins : ndarray
+            Boundaries of the intervals
+        V_bins : ndarray
+            Potential values at the center of each interval
+        x_centers : ndarray
+            Centers of the intervals with boundary conditions applied
+    """
     num_intervallesC = num_intervalles -2
     delta_x = (x_max - x_min) / (num_intervallesC + 1)
 
