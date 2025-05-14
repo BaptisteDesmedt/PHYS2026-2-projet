@@ -3,4 +3,4 @@ from .pot import *
 from .discret import *
 
 # Optional: Shorten imports for users
-__all__ = ["pot","pot_period","discretiser_period", "discretiser","potential_voisin"]
+__all__ = ["pot","pot_period","discretiser_period", "discretiser","pot_solve"]

@@ -8,7 +8,8 @@ from Potentials.discret import discretiser
 
 #CONSTANTS DEFINITION
 
-hbar = 1.0545718e-34  # Reduced Planck's constant in J·s
+h=6.62606896e-34
+hbar=h/(2*np.pi)
 m = 9.10938356e-31    # Electron mass in kg (We assume we are working with electrons)
 
 
@@ -52,90 +53,59 @@ def build_transfer_matrix(V, E, dx):
 
 def boundary_cond(V,E,dx):
     M = build_transfer_matrix(V, E, dx)
-    return M[0,0]       
+    return M[1,0]       
 
 
-def find_eigenvalues(V, dx, E_min, E_max, num_points=1000, tol=1e-3, plot=False):
-    """
-    Finds the eigenvalues of the system within the given energy range.
-
-    Parameters:
-    V : array-like
-        The potential profile.
-    dx : float
-        The spatial step size.
-    E_min : float
-        The minimum energy to search for eigenvalues.
-    E_max : float
-        The maximum energy to search for eigenvalues.
-    num_points : int, optional
-        The number of points in the coarse grid search (default is 1000).
-    tol : float, optional
-        The tolerance for identifying eigenvalues (default is 1e-3).
-    plot : bool, optional
-        Whether to plot the transmission (default is False).
-
-    Returns:
-    list
-        A list of eigenvalues. If no eigenvalues are found within the tolerance,
-        the function returns the energies with the minimum transmission as a fallback.
-    """
-    # Create a coarse grid of energies
-    E_values = np.linspace(E_min, E_max, num_points)
-    transmissions = np.zeros(num_points)
-
-    # Calculate the transmission for each energy value
-    for i, E in enumerate(E_values):
-        T = boundary_cond(V, E, dx)
-        transmissions[i] = np.abs(T)
+def find_eigenvalues(V, dx, E_min, E_max, num_points=1000, tol=1e-10, plot=True, refine=True, max_iter =100):
+    E_grid = np.linspace(E_min, E_max, num_points)
+    bc_values = np.array([boundary_cond(V, E, dx) for E in E_grid])
     
-    # Find minima in transmission function (candidates for eigenvalues)
-    potential_eigenvalues = []
-    mins, _ = find_peaks(-transmissions)
+    # Find candidate intervals with sign changes
+    signs = np.sign(bc_values)
+    zero_points = E_grid[np.abs(bc_values) < tol]  # Direct hits
+    crossing_points = []
     
-    # For each minimum, refine the search to get precise eigenvalue
-    if len(mins) > 0:
-        for min_idx in mins:
-            # Only consider significant minima
-            if transmissions[min_idx] < tol:
-                # Define a narrower range around the minimum
-                E_search_min = E_values[max(0, min_idx-5)]
-                E_search_max = E_values[min(num_points-1, min_idx+5)]
+    # Detect sign crossings between grid points
+    for i in range(len(E_grid)-1):
+        if signs[i] == 0 or signs[i+1] == 0:
+            continue
+        if signs[i] != signs[i+1]:
+            crossing_points.append((E_grid[i], E_grid[i+1]))
+    
+    # Refine candidates using Brent's method
+    eigenvalues = []
+    if refine:
+        for interval in crossing_points:
+            try:
+                result = root_scalar(
+                    lambda E: boundary_cond(V, E, dx),
+                    bracket=interval,
+                    method='brentq',
+                    xtol=tol,
+                    maxiter=max_iter
+                )
+                if result.converged:
+                    eigenvalues.append(result.root)
+            except ValueError:
+                continue
                 
-                # Use root-finding to get precise eigenvalue
-                try:
-                    result = root_scalar(
-                        lambda E: np.abs(boundary_cond(V, E, dx)),
-                        bracket=[E_search_min, E_search_max],
-                        method='brentq'
-                    )
-                    if result.converged:
-                        potential_eigenvalues.append(result.root)
-                except:
-                    # Fallback if root finding fails
-                    potential_eigenvalues.append(E_values[min_idx])
+    # Combine results and remove duplicates
+    eigenvalues = np.unique(np.concatenate([zero_points, eigenvalues]))
     
-    # If no eigenvalues found, return the energies with minimum transmission
-    if len(potential_eigenvalues) == 0 and len(mins) > 0:
-        potential_eigenvalues = [E_values[idx] for idx in mins]
-    
-    # Plot the results if requested
+    # Visualization
     if plot:
         plt.figure(figsize=(10, 6))
-        plt.semilogy(E_values, transmissions)
-        plt.scatter([E_values[idx] for idx in mins], [transmissions[idx] for idx in mins], c='r', marker='o')
-        plt.scatter(potential_eigenvalues, [tol/2]*len(potential_eigenvalues), c='g', marker='x')
+        plt.plot(E_grid, bc_values, label='Boundary Condition')
+        plt.axhline(0, color='k', linestyle='--', alpha=0.5)
+        plt.scatter(eigenvalues, np.zeros_like(eigenvalues), 
+                   color='r', zorder=5, label='Eigenvalues')
+        plt.xlabel("Energy")
+        plt.ylabel("Boundary Condition Value")
+        plt.title("Eigenvalue Search Results")
+        plt.legend()
         plt.grid(True)
-        plt.xlabel('Energy (J)')
-        plt.ylabel('|M[0,0]|')
-        plt.title('Finding eigenvalues from transmission minima')
-        plt.legend(['Transmission', 'Minima', 'Eigenvalues'])
-        plt.tight_layout()
-        plt.savefig('Figures/eigenvalues.png', dpi=300, bbox_inches='tight')
         plt.show()
     
-    return potential_eigenvalues
-
-
+    return eigenvalues
 
 

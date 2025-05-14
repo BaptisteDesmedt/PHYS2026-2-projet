@@ -11,7 +11,7 @@ m = 9.10938356e-31    # Electron mass in kg (We assume we are working with elect
 import numpy as np 
 from scipy.integrate import solve_bvp
 import matplotlib.pyplot as plt
-from Potentials.pot import pot_period
+from Potentials.pot import pot_solve
 
 
 def OdSchrodinger(x, y, E, V, params, N, L):
@@ -24,7 +24,9 @@ def bc(ya, yb):
 
 def generate_wavefunction_guess(x_mesh, params, N, L):
     """
-    Generate an initial guess for the wavefunction that has a peak at L/2 and is normalized.
+    Generate an initial guess for the wavefunction that:
+    - Equals zero at both boundaries
+    - Has a peak of amplitude 2 at x = 0.5e-9
     
     Parameters:
     -----------
@@ -42,21 +44,27 @@ def generate_wavefunction_guess(x_mesh, params, N, L):
     tuple
         (wavefunction, derivative of wavefunction)
     """
-    # Create a Gaussian peak centered at L/2
-    center = L/2
-    width = L/10  # Width of Gaussian
+    # Target peak position
+    peak_position = 0.5e-9
     
-    # Generate Gaussian wavefunction
-    psi = np.exp(-((x_mesh - center)**2) / (2 * width**2))
+    # Create a localized Gaussian-like function centered at peak_position
+    width = L/2  # Adjust width as needed for appropriate spread
     
-    # Normalize the wavefunction
-    norm = np.sqrt(np.trapz(psi**2, x_mesh))
-    psi = psi / norm
+    # Calculate the normalized distance from the peak position
+    # (scaled by domain width to handle different domain sizes)
+    normalized_distance = (x_mesh - peak_position)**2 / width**2
     
-    # Calculate derivative using gradient
-    dpsi = np.gradient(psi, x_mesh)
+    # Create a function that's 0 at boundaries and has peak at specified position
+    psi = 1.41 * np.exp(-normalized_distance)
     
-    return psi, dpsi
+    # Force boundary conditions (ensure it's exactly 0 at boundaries)
+    psi[0] = 0.0
+    psi[-1] = 0.0
+    
+    # Calculate the derivative analytically
+    dpsi_dx = -2.0 * (x_mesh - peak_position) / width**2 * psi
+    
+    return psi, dpsi_dx
 
 def solve(V, E, x_mesh, params, N, L, plot=False, save_path=None):
     """
@@ -87,12 +95,12 @@ def solve(V, E, x_mesh, params, N, L, plot=False, save_path=None):
         The solution object from solve_bvp
     """
     # Generate initial guess
-    psi_guess, dpsi_guess = generate_wavefunction_guess(x_mesh, params, N, L)
+    psi_guess, dpsi_dx_guess = generate_wavefunction_guess(x_mesh, params, N, L)
     
     y_guess = np.zeros((2, len(x_mesh)))
-    y_guess[::] = psi_guess 
-    print("Initial guess for the wavefunction:", y_guess)
-    print("Initial guess for the derivative of the wavefunction:", dpsi_guess)
+    y_guess[0] = psi_guess
+    y_guess[1] = dpsi_dx_guess
+
     
     print("Solving the Schrödinger equation...")
     sol = solve_bvp(
@@ -110,7 +118,9 @@ def solve(V, E, x_mesh, params, N, L, plot=False, save_path=None):
     
     if plot:
         plt.figure(figsize=(10, 6))
-        plt.plot(x_mesh, (sol.sol(x_mesh)[0])**2, label='Wavefunction')
+        plt.plot(x_mesh, (sol.y[0])**2, label='Wavefunction')
+        #plt.plot(x_mesh, psi_guess**2)
+        #plt.ylim(-4, 8)
         plt.title(f'Wavefunction for E = {E}')
         plt.xlabel('x')
         plt.ylabel('ψ**2(x)')

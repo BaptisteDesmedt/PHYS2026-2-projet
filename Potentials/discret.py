@@ -79,8 +79,15 @@ def discretiser_period(x_min, x_max, num_intervalles, pot, L, N, params):
 
     for i in range(2, num_intervallesC + 1):
         x_bins[i] = x_min + delta_x / 2 + (i - 1) * delta_x
+    
     x_centers = (x_bins[:-1] + x_bins[1:]) / 2
-    V_bins = pot(x_centers, params, N, L)
+    # Initialize V_bins to match x_centers size
+    V_bins = np.zeros(len(x_centers))
+    
+    # Loop through x_centers indices only
+    for i in range(len(x_centers)):
+        V_bins[i] = pot(x_centers[i], params, N, L)
+    
     V_bins[0] = 0.0
     V_bins[-1] = 0.0
     x_centers[0] = x_min
