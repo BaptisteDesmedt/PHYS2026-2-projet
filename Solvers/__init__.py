@@ -1,6 +1,7 @@
 # __init__.py
 from .solve import (
-    solve
+    solve,
+    solve_discretized
 )
 from .tmm import (
     build_transfer_matrix,
@@ -13,4 +14,4 @@ __all__ = [
     "solve",
     "build_transfer_matrix",
     "k_from_energy",
-]
+    "solve_discretized"]

@@ -6,129 +6,115 @@ Created on Wed Mar 26 19:03:24 2025
 @author: baptiste
 """
 
-hbar = 1.0545718e-34  # Reduced Planck's constant in J·s
-m = 9.10938356e-31    # Electron mass in kg (We assume we are working with electrons)
+
 import numpy as np 
 from scipy.integrate import solve_bvp
 import matplotlib.pyplot as plt
-from Potentials.pot import pot_solve
+from scipy.interpolate import interp1d
 
+h=6.626e-34
+hbar=h/(2*np.pi)
+m = 9.11e-31 
 
-def OdSchrodinger(x, y, E, V, params, N, L):
-    psi, dpsi_dx = y
-    d2psi_dx2 = (V(x, params, N, L) - E) * psi * (2 * m / (hbar**2))
-    return ([dpsi_dx, d2psi_dx2])
-
-def bc(ya, yb):
-    return np.array([ya[0], yb[0]])
-
-def generate_wavefunction_guess(x_mesh, params, N, L):
+def generate_wavefunction_guess(x_mesh, N, L):
     """
-    Generate an initial guess for the wavefunction that:
-    - Equals zero at both boundaries
-    - Has a peak of amplitude 2 at x = 0.5e-9
-    
-    Parameters:
-    -----------
-    x_mesh : array_like
-        The x coordinates where the solution is evaluated
-    params : tuple
-        Parameters for the potential function
-    N : int
-        Number of periods
-    L : float
-        Period length
-    
-    Returns:
-    --------
-    tuple
-        (wavefunction, derivative of wavefunction)
+    Generate an initial guess for the wavefunction: a Gaussian centered at L/2.
     """
-    # Target peak position
-    peak_position = 0.5e-9
-    
+     # Target peak position
+    center = L  
     # Create a localized Gaussian-like function centered at peak_position
-    width = L/2  # Adjust width as needed for appropriate spread
-    
-    # Calculate the normalized distance from the peak position
-    # (scaled by domain width to handle different domain sizes)
-    normalized_distance = (x_mesh - peak_position)**2 / width**2
-    
-    # Create a function that's 0 at boundaries and has peak at specified position
-    psi = 1.41 * np.exp(-normalized_distance)
+    width = L /3.5
+    psi = 0.2e5*np.exp(-((x_mesh - center) ** 2) / (2 * width ** 2)) +0.2e5*np.exp(-((x_mesh - center*2) ** 2) / (2 * width ** 2))
     
     # Force boundary conditions (ensure it's exactly 0 at boundaries)
     psi[0] = 0.0
     psi[-1] = 0.0
     
     # Calculate the derivative analytically
-    dpsi_dx = -2.0 * (x_mesh - peak_position) / width**2 * psi
+    dpsi_dx = np.gradient(psi,x_mesh)
     
-    return psi, dpsi_dx
+    return np.vstack([psi, dpsi_dx])
+    return y_guess
 
-def solve(V, E, x_mesh, params, N, L, plot=False, save_path=None):
-    """
-    Solve the Schrodinger equation.
-    
-    Parameters:
-    -----------
-    V : callable
-        The potential function
-    E : float
-        The energy eigenvalue
-    x_mesh : array_like
-        The x coordinates where the solution is evaluated
-    params : tuple
-        Parameters for the potential function
-    N : int
-        Number of periods
-    L : float
-        Period length
-    plot : bool, optional
-        Whether to plot the solution and initial guess (default is False)
-    save_path : str, optional
-        Path to save the figure if plot is True (default is None)
-        
-    Returns:
-    --------
-    sol : object
-        The solution object from solve_bvp
-    """
-    # Generate initial guess
-    psi_guess, dpsi_dx_guess = generate_wavefunction_guess(x_mesh, params, N, L)
-    
-    y_guess = np.zeros((2, len(x_mesh)))
-    y_guess[0] = psi_guess
-    y_guess[1] = dpsi_dx_guess
+def bc(ya, yb):
+    return np.array([ya[0], yb[0]])
 
-    
-    print("Solving the Schrödinger equation...")
-    sol = solve_bvp(
-        fun=lambda x, y: OdSchrodinger(x, y, E, V, params, N, L),
-        bc=lambda ya, yb: bc(ya, yb),
-        x=x_mesh,
-        y=y_guess,
-    )
-    if sol.success:
-        print("The solution was found successfully!")
-        print("solution:", sol)
-    else:
-        print("The solver failed.")
+def schrodinger_ode(x, y, E,V,params,N,L):
+    # y[0] = psi, y[1] = psi'
+    return np.array((y[1], (((2*m)/(hbar**2))*(V(x,params,N,L) - E)) * y[0]))
+
+def schrodinger_ode_discretized(x, y, E, V_interp):
+    # y[0] = psi, y[1] = psi'
+    return np.array((y[1], (((2 * m) / (hbar**2)) * (V_interp(x) - E)) * y[0]))
+
+def solve(V, E, x_mesh, params, N, L,plot=True, save_path=None):
+    """
+    Solve the time-independent 1D Schrödinger equation using solve_bvp.
+    Returns the normalized wavefunction ψ(x) on x_mesh.
+    """
+    y_guess  = generate_wavefunction_guess(x_mesh,N,L)
+
+
+    sol = solve_bvp(lambda x, y: schrodinger_ode(x, y, E,V,params,N,L), bc, x_mesh, y_guess, verbose = 2 , max_nodes = 10000)
+    if not sol.success:
+        print("The solver failed.", sol.message)
         exit(1)
-    
+       
     if plot:
         plt.figure(figsize=(10, 6))
-        plt.plot(x_mesh, (sol.y[0])**2, label='Wavefunction')
-        #plt.plot(x_mesh, psi_guess**2)
-        #plt.ylim(-4, 8)
-        plt.title(f'Wavefunction for E = {E}')
-        plt.xlabel('x')
-        plt.ylabel('ψ**2(x)')
+        #plt.plot(sol.x, psi, label='|ψ(x)|²', color = 'darkblue')
+        plt.title(f'Wavefunction for E = {E:.3e} J')
+        plt.plot(x_mesh , y_guess[0], label ="intial guess", color ='r')
+        plt.xlabel('x (m)')
+        plt.ylabel('|ψ(x)|²')
         plt.legend()
         plt.grid()
         if save_path is not None:
             plt.savefig(save_path)
         plt.show()
+
     return sol
+
+def solve_discretized(V_bins, x_bins, E, x_mesh, N, L, plot=True, save_path=None):
+    """
+    Solve the time-independent 1D Schrödinger equation for a discretized potential.
+    """
+    # Define the piecewise constant potential function
+    def V_partition(x):
+        # Find the bin index for each x value
+        indices = np.searchsorted(x_bins, x, side='right') - 1
+        indices = np.clip(indices, 0, len(V_bins) - 1)  # Ensure indices are within bounds
+        return V_bins[indices]
+
+    # Schrödinger equation for the discretized potential
+    def schrodinger_ode_discretized(x, y):
+        return np.array((y[1], ((2 * m) / (hbar**2)) * (V_partition(x) - E) * y[0]))
+
+    # Generate initial guess for the wavefunction
+    y_guess = generate_wavefunction_guess(x_mesh, N, L)
+
+    # Solve the Schrödinger equation
+    sol = solve_bvp(schrodinger_ode_discretized, bc, x_mesh, y_guess, verbose=2, max_nodes=1000000)
+    if not sol.success:
+        print("The solver failed.", sol.message)
+        exit(1)
+
+    norm = np.trapz(abs(sol.sol(sol.x)[0])**2, x_mesh)
+    psi = abs(sol.sol(sol.x)[0])/np.sqrt(norm)
+    # Plot the results if requested
+    if plot:
+        plt.figure(figsize=(10, 6))
+        plt.plot(x_mesh, psi, label='|ψ(x)|²', color='darkblue')
+        plt.plot(x_mesh,y_guess[0])
+        plt.title(f'Wavefunction for E = {E:.3e} J (Discretized Potential)')
+        plt.xlabel('x (m)')
+        plt.ylabel('|ψ(x)|²')
+        plt.legend()
+        plt.grid()
+        if save_path is not None:
+            plt.savefig(save_path)
+        plt.show()
+
+    return psi
 
 
